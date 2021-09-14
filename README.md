@@ -1,4 +1,5 @@
 # Udagram Image Filtering Application
+## Refactor monolith to microservice ad deploy project for udacity cloud developer nanodegree
 
 Udagram is a simple cloud application developed alongside the Udacity Cloud Engineering Nanodegree. It allows users to register and log into a web client, post photos to the feed, and process photos using an image filtering microservice.
 
@@ -71,16 +72,44 @@ Launch the frontend app locally.
     ```
 * You can visit `http://localhost:8100` in your web browser to verify that the application is running. You should see a web interface.
 
-## Tips
-1. Take a look at `udagram-api` -- does it look like we can divide it into two modules to be deployed as separate microservices?
-2. The `.dockerignore` file is included for your convenience to not copy `node_modules`. Copying this over into a Docker container might cause issues if your local environment is a different operating system than the Docker image (ex. Windows or MacOS vs. Linux).
-3. It's useful to "lint" your code so that changes in the codebase adhere to a coding standard. This helps alleviate issues when developers use different styles of coding. `eslint` has been set up for TypeScript in the codebase for you. To lint your code, run the following:
-    ```bash
-    npx eslint --ext .js,.ts src/
-    ```
-    To have your code fixed automatically, run
-    ```bash
-    npx eslint --ext .js,.ts src/ --fix
-    ```
-4. `set_env.sh` is really for your backend application. Frontend applications have a different notion of how to store configurations. Configurations for the application endpoints can be configured inside of the `environments/environment.*ts` files.
-5. In `set_env.sh`, environment variables are set with `export $VAR=value`. Setting it this way is not permanent; every time you open a new terminal, you will have to run `set_env.sh` to reconfigure your environment variables. To verify if your environment variable is set, you can check the variable with a command like `echo $POSTGRES_USERNAME`.
+## Deployment to AWS
+Create accounts in Travis CI and docker hub
+Create 4 repos in dockerhub for 4 docker images and edit their names in .travis.yml file
+Add required env var in travis website
+connect github to travis and pulls to the repo trigger travis 
+After successful build you can see 4 images in docker hub
+
+Edit required files in the deployments folder.
+You can check the format of aws credentials by decoding base64 value in the aws-secret.yaml file
+
+Create custer in aws and connect eks to kubectl
+While creating node groups make sure you use t3.medium or abouve with enough memory
+
+run the following commands
+```bash
+    # Apply env variables and secrets
+    kubectl apply -f aws-secret.yaml
+    kubectl apply -f env-secret.yaml
+    kubectl apply -f env-configmap.yaml
+    # Deployments - Double check the Dockerhub image name and version in the deployment files
+    kubectl apply -f backend-feed-deployment.yaml
+    # Do the same for other three deployment files
+    # Service
+    kubectl apply -f backend-feed-service.yaml
+    # Do the same for other three service files
+```
+
+Expose external IP
+```bash
+    kubectl expose deployment frontend --type=LoadBalancer --name=publicfrontend
+    # Repeat the process for the *reverseproxy* deployment. 
+```
+For autoscaling the pods first install the kubernetes metric server
+```bash
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
+```
+
+Then add autoscaling to deployments
+```bash
+    kubectl autoscale deployment backend-user --cpu-percent=70 --min=3 --max=5
+```

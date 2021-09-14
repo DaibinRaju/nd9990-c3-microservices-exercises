@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  AWS_MEDIA_BUCKET: my-593289387321-udagram2
+  AWS_PROFILE: default
+  AWS_REGION: us-east-1
+  JWT_TOKEN: testing
+  POSTGRES_DATABASE: udacity
+  POSTGRES_HOST: database1.c1l5wcws4owo.us-east-1.rds.amazonaws.com
+  URL: http://localhost:8100
+metadata:
+  name: env-config
